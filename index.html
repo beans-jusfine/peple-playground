@@ -106,7 +106,8 @@
                 streamingAssetsUrl: "StreamingAssets",
                 companyName: "Studio Minus",
                 productName: "People Playground",
-                productVersion: "0"
+                productVersion: "0",
+                matchWebGLToCanvasSize: false
             };
             if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
                 var meta = document.createElement('meta');
@@ -116,9 +117,12 @@
                 container.className = "unity-mobile";
                 canvas.className = "unity-mobile";
             } else {
+                // Render at 80% internal resolution to reduce GPU workload.
+                // Keep the displayed canvas full-size; only its drawing buffer is smaller.
+                var renderScale = 0.8;
                 function resizeCanvas() {
-                    canvas.width = window.innerWidth;
-                    canvas.height = window.innerHeight;
+                    canvas.width = Math.max(1, Math.round(window.innerWidth * renderScale));
+                    canvas.height = Math.max(1, Math.round(window.innerHeight * renderScale));
                     canvas.style.width = window.innerWidth + "px";
                     canvas.style.height = window.innerHeight + "px";
                 }
