@@ -216,7 +216,8 @@
       log("Intercepting fetch for:", filename);
 
       return new Promise((resolve, reject) => {
-        const maxWait = 60000;
+        // Large Unity split files can take several minutes to download on slower connections.
+        const maxWait = 10 * 60 * 1000;
         const startTime = Date.now();
 
         const check = setInterval(() => {
