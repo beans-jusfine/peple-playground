@@ -139,20 +139,45 @@
 
       const buffers = [];
       for (let i = 0; i < parts.length; i++) {
-        const response = await window.originalFetch(parts[i]);
+        let buffer = null;
+        let lastError = null;
 
-        if (!response.ok) {
-          if (response.status === 403 || response.status === 404) {
-            throw new Error(`Part missing: ${parts[i]}`);
+        // Retry interrupted large-file transfers without restarting completed parts.
+        for (let attempt = 1; attempt <= 4; attempt++) {
+          try {
+            const separator = parts[i].includes("?") ? "&" : "?";
+            const requestUrl = `${parts[i]}${separator}mergeRetry=${attempt}`;
+            const response = await window.originalFetch(requestUrl, {
+              cache: "no-store",
+            });
+
+            if (!response.ok) {
+              if (response.status === 403 || response.status === 404) {
+                throw new Error(`Part missing: ${parts[i]} (HTTP ${response.status})`);
+              }
+              throw new Error(`HTTP ${response.status} while loading ${parts[i]}`);
+            }
+
+            buffer = await response.arrayBuffer();
+            if (!buffer.byteLength) {
+              throw new Error(`Empty response for ${parts[i]}`);
+            }
+            lastError = null;
+            break;
+          } catch (err) {
+            lastError = err;
+            error(`Attempt ${attempt}/4 failed for ${parts[i]}:`, err);
+            if (attempt < 4) {
+              await new Promise((resolve) => setTimeout(resolve, attempt * 1500));
+            }
           }
-          throw new Error(
-            `failed to load sowwy (make a report in bug-reports in the discord) ${parts[i]}: ${response.status}`,
-          );
         }
 
-        const buffer = await response.arrayBuffer();
-        buffers.push(buffer);
+        if (!buffer) {
+          throw new Error(`Could not download ${parts[i]} after 4 attempts: ${lastError}`);
+        }
 
+        buffers.push(buffer);
         mergeProgress[fileName].current = i + 1;
         updateLoadingDisplay();
       }
