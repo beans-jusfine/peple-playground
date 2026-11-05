@@ -93,6 +93,9 @@
                 function fetchPart(index) {
                     if (index >= fileParts.length) {
                         let mergedBlob = new Blob(buffers);
+                        // Blob now owns the merged bytes; release the original chunk references
+                        // so they can be reclaimed instead of being kept alongside the full file.
+                        buffers.length = 0;
                         let mergedFileUrl = URL.createObjectURL(mergedBlob);
                         mergedObjectUrls.push(mergedFileUrl);
                         resolve(mergedFileUrl);
