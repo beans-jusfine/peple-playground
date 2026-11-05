@@ -25,15 +25,19 @@ jobs:
       - name: Check out source repository
         uses: actions/checkout@v4
         with:
-          repository: bubbls/ugss
+          repository: genizy/web-port
+          ref: main
           path: source
           sparse-checkout: people-playground
           sparse-checkout-cone-mode: true
 
-      - name: Copy folder contents and push
+      - name: Replace old game build with new people-playground folder
         working-directory: destination
         run: |
+          rm -rf Build TemplateData index.html merge.js
           cp -a ../source/people-playground/. .
+          # Use the copied local Build files instead of the upstream CDN.
+          sed -i '/<base href=/d' index.html
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
@@ -41,5 +45,5 @@ jobs:
             echo "No changes to import."
             exit 0
           fi
-          git commit -m "Import people-playground folder from bubbls/ugss"
+          git commit -m "Replace game build with genizy/web-port version"
           git push origin main
