@@ -40,36 +40,6 @@
         <div id="unity-warning"> </div>
     </div>
     <script>
-        (function () {
-            var isChromeOS = /CrOS/.test(navigator.userAgent);
-            window.__ppgIsChromeOS = isChromeOS;
-
-            // --- Frame rate cap ---
-            // Unity WebGL renders as fast as requestAnimationFrame lets it.
-            // On weaker CPUs (Chromebooks especially) trying to hit 60fps
-            // with a screen full of explosion debris just burns cycles and
-            // makes stutter worse, not better. This caps the effective frame
-            // rate before Unity's render loop ever starts. Tune the numbers
-            // below if 30fps feels too choppy or too conservative.
-            var targetFPS = isChromeOS ? 30 : 60;
-            var hiddenFPS = 5; // throttle hard while the tab is in the background
-            var interval = 1000 / targetFPS;
-            var lastFrameTime = 0;
-            var nativeRAF = window.requestAnimationFrame.bind(window);
-
-            window.requestAnimationFrame = function (callback) {
-                return nativeRAF(function (timestamp) {
-                    var currentInterval = document.hidden ? (1000 / hiddenFPS) : interval;
-                    if (timestamp - lastFrameTime >= currentInterval) {
-                        lastFrameTime = timestamp;
-                        callback(timestamp);
-                    } else {
-                        window.requestAnimationFrame(callback);
-                    }
-                });
-            };
-        })();
-
         var container = document.querySelector("#unity-container");
         var canvas = document.querySelector("#unity-canvas");
         var loadingBar = document.querySelector("#unity-loading-bar");
@@ -197,7 +167,7 @@
                 // only its drawing buffer is smaller. Chromebooks get a more
                 // aggressive scale since their GPUs are usually much weaker
                 // than their screen resolution would suggest.
-                var renderScale = window.__ppgIsChromeOS ? 0.55 : 0.8;
+                var renderScale = 0.8;
                 function resizeCanvas() {
                     canvas.width = Math.max(1, Math.round(window.innerWidth * renderScale));
                     canvas.height = Math.max(1, Math.round(window.innerHeight * renderScale));
