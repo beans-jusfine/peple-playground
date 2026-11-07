@@ -130,8 +130,8 @@
         setLoadingText("PREPARING GAME FILES");
 
         Promise.allSettled([
-            mergeFiles(getParts("https://raw.githubusercontent.com/bubbls/ugss/main/people-playground/Build/pggbog.wasm", 1, 3), "PPG.WASM"),
-            mergeFiles(getParts("https://raw.githubusercontent.com/bubbls/ugss/main/people-playground/Build/pggbog.data", 1, 7), "PPG.DATA")
+            mergeFiles(getParts("Build/pggbog.wasm", 1, 3), "PPG.WASM"),
+            mergeFiles(getParts("Build/pggbog.data", 1, 7), "PPG.DATA")
         ]).then((results) => {
             const failedResult = results.find((result) => result.status === "rejected");
             if (failedResult) {
@@ -142,7 +142,7 @@
             setLoadingText("STARTING UNITY");
             container.hidden = false;
             var buildUrl = "Build";
-            var remoteBuildUrl = "https://raw.githubusercontent.com/bubbls/ugss/main/people-playground/Build";
+            var remoteBuildUrl = "Build";
             var loaderUrl = remoteBuildUrl + "/pggbog.loader.js";
             var config = {
                 dataUrl: dataUrl,
