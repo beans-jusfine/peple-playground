@@ -44,11 +44,6 @@
             cursor: pointer;
         }
 
-        #unity-container:fullscreen {
-            width: 100%;
-            height: 100%;
-            background: black;
-        }
     </style>
 </head>
 
@@ -74,20 +69,14 @@
         var loadingText = document.querySelector("#loading-text");
         var fullscreenButton = document.querySelector("#fullscreen-button");
         var mergedObjectUrls = [];
+        var unityInstance = null;
 
         fullscreenButton.addEventListener("click", function () {
-            if (document.fullscreenElement) {
-                document.exitFullscreen();
-                return;
-            }
+            if (!unityInstance) return;
 
-            var requestFullscreen = container.requestFullscreen ||
-                container.webkitRequestFullscreen;
-            if (requestFullscreen) {
-                requestFullscreen.call(container).catch(function (error) {
-                    console.error("Unable to enter fullscreen:", error);
-                });
-            }
+            // Use Unity's own fullscreen API so it can resize the WebGL canvas
+            // and update its internal fullscreen state together.
+            unityInstance.SetFullscreen(document.fullscreenElement ? 0 : 1);
         });
 
         document.addEventListener("fullscreenchange", function () {
@@ -236,7 +225,8 @@
                 createUnityInstance(canvas, config, (progress) => {
                     progressBarFull.style.width = 100 * progress + "%";
                     setLoadingText("LOADING GAME " + Math.round(progress * 100) + "%");
-                }).then((unityInstance) => {
+                }).then((instance) => {
+                    unityInstance = instance;
                     loadingBar.style.display = "none";
                     loadingText.remove();
                     fullscreenButton.style.display = "block";
