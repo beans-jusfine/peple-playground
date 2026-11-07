@@ -28,6 +28,27 @@
             top: 0;
             left: 0;
         }
+
+        #fullscreen-button {
+            display: none;
+            position: fixed;
+            right: 16px;
+            bottom: 16px;
+            z-index: 10000;
+            padding: 10px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 8px;
+            background: rgba(20, 20, 20, 0.85);
+            color: white;
+            font: 14px Arial, sans-serif;
+            cursor: pointer;
+        }
+
+        #unity-container:fullscreen {
+            width: 100%;
+            height: 100%;
+            background: black;
+        }
     </style>
 </head>
 
@@ -35,6 +56,7 @@
     <div id="loading-text" style="color: white; font-size: 48px; font-family: cursive; text-align: center; margin-top: 20px;">LOADING...</div>
     <div id="unity-container" class="unity-desktop" hidden>
         <canvas id="unity-canvas" tabindex="-1"></canvas>
+        <button id="fullscreen-button" type="button">⛶ Fullscreen</button>
         <div id="unity-loading-bar">
             <div id="unity-logo"></div>
             <div id="unity-progress-bar-empty">
@@ -50,7 +72,29 @@
         var progressBarFull = document.querySelector("#unity-progress-bar-full");
         var warningBanner = document.querySelector("#unity-warning");
         var loadingText = document.querySelector("#loading-text");
+        var fullscreenButton = document.querySelector("#fullscreen-button");
         var mergedObjectUrls = [];
+
+        fullscreenButton.addEventListener("click", function () {
+            if (document.fullscreenElement) {
+                document.exitFullscreen();
+                return;
+            }
+
+            var requestFullscreen = container.requestFullscreen ||
+                container.webkitRequestFullscreen;
+            if (requestFullscreen) {
+                requestFullscreen.call(container).catch(function (error) {
+                    console.error("Unable to enter fullscreen:", error);
+                });
+            }
+        });
+
+        document.addEventListener("fullscreenchange", function () {
+            fullscreenButton.textContent = document.fullscreenElement
+                ? "✕ Exit fullscreen"
+                : "⛶ Fullscreen";
+        });
 
         function setLoadingText(message) {
             loadingText.textContent = "LOADING... (" + message + ")";
@@ -195,6 +239,7 @@
                 }).then((unityInstance) => {
                     loadingBar.style.display = "none";
                     loadingText.remove();
+                    fullscreenButton.style.display = "block";
 
                     // Unity has finished loading the merged files, so their Blob URLs
                     // can now be released without affecting the running game.
